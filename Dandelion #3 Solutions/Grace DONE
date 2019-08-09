@@ -1,0 +1,51 @@
+; Here we set up so that a register can 'show' a string of letters
+	LA	w15, HiStub	; Adds the MEMORY ADDRESS of the 'YouCanNameThisAnything' string to register w8.
+	ADD	w15, 16	
+	LA	w16, HiStub
+	ADD	w16, 17
+	LA	w17, HiStub
+	ADD	w17, 18
+	LA	w18, HiStub
+	ADD	w18, 16
+	LA	w19, HiStub
+	ADD	w19, 17
+	LA	w20, HiStub
+	ADD	w20, 18
+
+; Moves the memory address 9 'spaces/characters' forward. We'll see why later!
+; Note that this concept - putting the memory address into something instead of the data itself - is called a 'pointer'.
+; 'Pointers' are simply index locations, and so take up less space.
+
+; As an anecdote, imagine searching for a paragraph of text in a book. It's much faster to store/remember "Page 101, Line 15" in memory than
+; to store the entire paragraph's worth of text!
+
+main:			
+	MOV	b0, 0x79
+	WRROM	w15,b0		; This overwrites the w8 register with the contents of b0, specifically to "ROM" or Read-Only-Memory. 
+; Note that this actually writes to 9 spaces ahead of the 'start' of w8, because of the "Add 9" we did on row 31.
+	PRINT HiStub ; Shows the contents of the String in the debug console on YASP.
+; Note that the string will be altered by the contents of w8 because of the always-active code before 'main'.
+	MOV	b4, 0x69 
+	MOV	b5, 0x6E 
+	MOV	b6, 0x67 
+	WRROM	w15,b4		
+	WRROM	w16,b5	
+	WRROM	w17,b6; Overwrite the relevant part of the register again
+	PRINT HiStub
+	MOV	b7, 0x65
+	MOV	b8, 0x64
+	Mov    b9, 0x20
+	WRROM	w18,b7;
+	WRROM	w19,b8; Overwrite the relevant part of the register again
+	WRROM  w20,b9;
+	PRINT HiStub
+	jmp JumpToEnd       ; This simply moves to the program END. END isn't actually written here because the
+; STRING initialization below would be auto-commented out if it occured after the END line.
+
+
+HiStub:		; Name your string variable whatever you like
+	STRING	"Showing: Assembl     "	; Insert some text to use for your string.
+
+JumpToEnd:
+END
+

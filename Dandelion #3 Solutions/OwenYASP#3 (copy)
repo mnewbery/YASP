@@ -1,0 +1,61 @@
+	LA	w8, text
+start:
+	MOV	b0, 0x41	;A
+	WrROM	w8, b0
+	ADD	w8, 1
+	MOV	b0, 0x73	;s
+	WRrOM	w8, b0
+	ADD	w8, 1
+	MOV	b0, 0x73	;s
+	WrROM	w8, b0
+	ADD	w8, 1
+	MOV	b0, 0x65	;e
+	WRrOM	w8, b0
+	ADD	w8, 1
+	MOV	b0, 0x6d	;m
+	WrROM	w8, b0
+	ADD	w8, 1
+	MOV	b0, 0x62	;b
+	WRrOM	w8, b0
+	ADD	w8, 1
+	MOV	b0, 0x6c	;l
+	WrROM	w8, b0
+	ADD	w8, 1
+loop:
+	MOV	b0, 0x79	;y
+	WRrOM	w8, b0
+	ADD	w8, 1
+	MOV	b0, 0x00	;
+	WRrOM	w8, b0
+	SUB	w8, 1
+	PRINT	text
+	MOV	b0, 0x69	;i
+	WRrOM	w8, b0
+	ADD	w8, 1
+	MOV	b0, 0x6e	;n
+	WrROM	w8, b0
+	ADD	w8, 1
+	MOV	b0, 0x67	;g
+	WRrOM	w8, b0
+	SUB	w8, 2
+	PRINT	text
+	MOV	b0, 0x65	;e
+	WrROM	w8, b0
+	ADD	w8, 1
+	MOV	b0, 0x64	;d
+	WRrOM	w8, b0
+	ADD	w8, 1
+	MOV	b0, 0x00	;
+	WRrOM	w8, b0
+	SUB	w8, 2
+	PRINT	text
+	jmp	count
+text:
+	STRING	"          "
+count:
+	INC	b4
+	CMP	b4, 03
+	JZ	finish
+	jmp	loop
+finish:
+END

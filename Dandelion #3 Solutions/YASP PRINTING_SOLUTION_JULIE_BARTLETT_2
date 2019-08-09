@@ -1,0 +1,45 @@
+
+	LA	w8, JulieIsAwesome	
+	ADD	w8, 7				
+
+
+main:			
+		
+	MOV	b0, 0x79
+	WRROM	w8,b0	
+	ADD 	w8, 1	
+	MOV	b4, 0x20
+	WRROM	w8,b4
+	ADD 	w8, 1	
+	MOV	b5, 0x20
+	WRROM	w8,b5
+	PRINT JulieIsAwesome
+
+	SUB 	w8, 2
+	MOV	b0, 0x69
+	WRROM	w8,b0		
+	ADD	w8, 1	
+	MOV	b4, 0x6e
+	WRROM	w8,b4
+	ADD	w8, 1		
+	MOV	b5, 0x67
+	WRROM	w8,b5	
+	PRINT JulieIsAwesome
+
+	SUB 	w8, 2
+	MOV	b5, 0x65
+	WRROM	w8,b5 
+	ADD 	w8, 1	
+	MOV	b4, 0x64
+	WRROM	w8,b4
+	ADD 	w8, 1	
+	MOV	b0, 0x20
+	WRROM	w8,b0
+	PRINT JulieIsAwesome
+
+JulieIsAwesome:		
+	STRING	"Assembl..."	
+
+JumpToEnd:
+END
+
