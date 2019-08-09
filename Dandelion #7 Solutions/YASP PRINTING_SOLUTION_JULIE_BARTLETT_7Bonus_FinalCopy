@@ -1,0 +1,172 @@
+	Print Intro1
+	Print Intro2
+
+	LA  w0, DateMMDD
+	ADD w0, 6 
+	LA  w1, DateMMDD
+	ADD w1, 7
+	LA  w3, DateMMDD
+	ADD w3, 9  
+	LA  w4, DateMMDD
+	ADD w4, 10 
+	LA  w8, Month_Digit_1 
+	ADD w8, 19 
+	LA  w10, Day_Digit_1
+	ADD w10, 17  
+	LA  w9,	Month_Digit_2 
+	ADD w9, 20 
+	LA  w11, Day_Digit_2
+	ADD w11, 18 
+
+	MOV b26, 0x30 
+	MOV b27, 0x30 
+	MOV b24, 0x30 
+	MOV b25, 0x31
+	MOV b28, 0x30 
+	MOV b29, 0x30
+	MOV b14, 0x2F 
+
+	enable 0x06  
+
+	WRROM  w8,b26
+	PRINT  Month_Digit_1
+
+main:
+	DELAY 30000 
+	jmp main  
+
+isr1:
+	CMP b24, 0x30  
+	JZ  IncrementMonth1
+	CMP b24, 0x31 
+	JZ  IncrementMonth2
+	CMP b24, 0x32  
+	JZ  IncrementDay1
+	CMP b24, 0x33
+	JZ  IncrementDay2
+	RETI   
+
+IncrementMonth1:
+	inc b26 
+	CMP b26, 0x32 
+	JZ  ResetMonth1
+	WRROM w8,b26  
+	PRINT Month_Digit_1 
+	reti   
+
+ResetMonth1:
+	MOV  b26, 0x30 
+	WRROM  w8,b26
+	PRINT  Month_Digit_1
+	RETI
+
+IncrementMonth2:
+	inc b27  
+	CMP b27, 0x3a 
+	JZ ResetMonth2 
+	WRROM w9,b27  
+	PRINT  Month_Digit_2 
+	reti   
+
+ResetMonth2:
+	MOV  b27, 0x30 
+	WRROM  w9,b27
+	PRINT  Month_Digit_2
+	RETI
+
+IncrementDay1:
+	inc  b28
+	CMP  b28, 0x34 
+	JZ   ResetDay1
+	WRROM w10,b28  
+	PRINT Day_Digit_1
+	reti
+
+ResetDay1:
+	MOV  b28, 0x30
+	WRROM  w10,b28
+	PRINT  Day_Digit_1
+	RETI
+
+IncrementDay2:
+	inc  b29
+	CMP  b29, 0x3a 
+	JZ   ResetDay2
+	WRROM w11,b29 
+	PRINT Day_Digit_2
+	reti
+
+ResetDay2:
+	MOV  b29, 0x30
+	WRROM w11,b29
+	PRINT Day_Digit_2
+	RETI
+
+isr2:
+	CMP b24, 0x30 
+	JZ  SaveInput 
+	CMP b24, 0x31  
+	JZ  SaveInput 
+	CMP b24, 0x32  
+	JZ  SaveInput 
+	CMP b24, 0x33 
+	Jz ShowDate 
+	CMP b24, 0x34 
+	PRINT DateMMDD 
+	JMP FinishProgram      
+	reti
+
+SaveInput:
+	Inc  b24  
+	RETI
+
+	org 0x102 
+	da isr1
+	org 0x104 
+	da isr2
+
+ShowDate:
+	call  MonthDayDate
+	PRINT DateMMDD 
+	Call  DayMonthDate
+	PRINT DateDDMM 
+
+MonthDayDate:
+	WRROM  w0,b26
+	WRROM  w1,b27
+	WRROM  w3,b28
+	WRROM  w4,b29
+	RETI 
+
+DayMonthDate:
+	PUSH  w13
+	PUSH  w14
+	POP   w13  
+	POP   w14
+	Jz   SaveInput 
+
+Intro1:
+	STRING "Enter Month and Date one digit at a time" 
+Intro2:
+	String "Keep pressing grey button to enter zeroes"
+
+Month_Digit_1:
+	STRING "First Digit Month: a " 
+Month_Digit_2:
+	STRING "Second Digit Month: b" 
+
+Day_Digit_1:
+	STRING "First Digit Day: c "
+Day_Digit_2:
+	STRING "Second Digit Day: d"
+
+DateMMDD:
+	STRING "Date: ab/cd"
+DateDDMM:
+	STRING "Press red to change date format"
+
+FinishProgram:
+	disable
+end
+
+

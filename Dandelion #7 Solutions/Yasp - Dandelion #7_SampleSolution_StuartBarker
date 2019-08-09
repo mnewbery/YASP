@@ -1,0 +1,55 @@
+; =====================================
+;        yasp - Dandelion #7
+;		SAMPLE SOLUTION
+; =====================================
+
+	LA 	w0, WordToPrint
+	ADD	w0, 0		; First digit/letter
+	LA 	w1, WordToPrint
+	ADD 	w1, 1		; Second digit/letter
+	LA 	w2, WordToPrint
+	ADD 	w2, 2		; Third digit/letter
+	LA 	w3, WordToPrint
+	ADD 	w3, 3		; Fourth digit/letter
+	LA 	w4, WordToPrint
+	ADD 	w4, 4		; Fifth digit/letter
+
+	MOV	b10, 0x31	; "1"
+	MOV	b11, 0x32	; "2"
+	MOV	b12, 0x32	; "2"
+	MOV	b13, 0x35 	; "5"
+
+	MOV 	b14, 0x2F	; "/"
+
+; Normal runtime code begins.
+main:	
+	call 	PrintNow 	; The "PrintNow" subroutine just uses the above byte registers to spell a word in sequence, as seen below.
+	CALL 	PrintReverse	; Just utilizes the stack to change around the byte values.
+	JMP 	toEnd
+
+; Nice and simple. Basically write from byte registers into the string so it reads "[b10][b11][b12][b13]"
+PrintNow:
+	WRROM 	w0,b10
+	WRROM 	w1,b11
+	WRROM 	w2,b14 		; Print the "/" character. The other digits must end up in the same word register, hence the sudden jump here.
+	WRROM 	w3,b12
+	WRROM 	w4,b13
+	PRINT 	WordToPrint
+	RETI 			; Returns to the beginning of Main if JUMPED to, and to where it was called originally if CALLED.
+
+PrintReverse:
+	PUSH 	w5		; w5 contains b10 and b11, so "12" by default.
+	PUSH 	w6		; w6 contains b12 and b13, so "25" by default.
+
+	POP 	w5		; w5 now contains "25", so b10 becomes "2" and b11 becomes "5"
+	POP 	w6		; w6 now contains "12", so b12 becomes "1" and b13 becomes "2"
+
+	CALL 	PrintNow	
+	RETI
+
+; The 'String' here is just some whitespace used to insert characters in later.
+WordToPrint:
+	STRING	"      "
+;End Program
+toEnd:
+END	

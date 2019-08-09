@@ -1,0 +1,96 @@
+	LA 	w0, WordToPrint
+	ADD	w0, 0		; First digit/letter
+	LA 	w1, WordToPrint
+	ADD 	w1, 1		; Second digit/letter
+	LA 	w2, WordToPrint
+	ADD 	w2, 2		; Third digit/letter
+	LA 	w3, WordToPrint
+	ADD 	w3, 3		; Fourth digit/letter
+	LA 	w4, WordToPrint
+	ADD 	w4, 4		; Fourth digit/letter
+
+	MOV	b10, 0x31	; "1"
+	MOV	b11, 0x32	; "2"
+	MOV	b12, 0x32	; "2"
+	MOV	b13, 0x35 	; "5"
+
+	MOV 	b14, 0x2F	; "/"
+
+main:	
+	call 	PrintNow 	
+	CALL 	PrintReverse	
+	JMP 	toEnd
+
+PrintNow:
+	WRROM 	w0,b10
+	WRROM 	w1,b11
+	WRROM 	w2,b14
+	WRROM 	w3,b12
+	WRROM 	w4,b13
+	PRINT 	WordToPrint
+	RETI 			
+
+PrintReverse:
+	PUSH 	b11
+	PUSH 	b10
+	PUSH 	b13
+	PUSH 	b12
+
+	POP 	b10 		
+	POP 	b11 		
+	POP 	b12
+	POP 	b13
+	CALL 	PrintNow	
+	RETI
+
+WordToPrint:
+	STRING	"      "
+toEnd:
+END	
+
+	LA 	w0, WordToPrint
+	ADD	w0, 0		; First digit/letter
+	LA 	w1, WordToPrint
+	ADD 	w1, 1		; Second digit/letter
+	LA 	w2, WordToPrint
+	ADD 	w2, 2		; Third digit/letter
+	LA 	w3, WordToPrint
+	ADD 	w3, 3		; Fourth digit/letter
+	LA 	w4, WordToPrint
+	ADD 	w4, 4		; Fourth digit/letter
+
+	MOV	b10, 0x31	; "1"
+	MOV	b11, 0x32	; "2"
+	MOV	b12, 0x32	; "2"
+	MOV	b13, 0x35 	; "5"
+
+	MOV 	b14, 0x2F	; "/"
+
+main:	
+	call 	PrintNow 	
+	CALL 	PrintReverse	
+	JMP 	toEnd
+
+PrintNow:
+	WRROM 	w0,b10
+	WRROM 	w1,b11
+	WRROM 	w2,b14
+	WRROM 	w3,b12
+	WRROM 	w4,b13
+	PRINT 	WordToPrint
+	RETI 			
+
+PrintReverse:
+	PUSH 	w5
+	PUSH 	w6
+
+	POP 	w6		
+	POP 	w5
+	CALL 	PrintNow	
+	RETI
+
+WordToPrint:
+	STRING	"      "
+toEnd:
+END	
+

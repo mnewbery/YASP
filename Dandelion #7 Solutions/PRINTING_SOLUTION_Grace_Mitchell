@@ -1,0 +1,57 @@
+
+	LA 	w0, WordToPrint
+	ADD	w0, 0		; First digit/letter
+	LA 	w1, WordToPrint
+	ADD 	w1, 1		; Second digit/letter
+	LA 	w2, WordToPrint
+	ADD 	w2, 3		; Third digit/letter
+	LA 	w3, WordToPrint
+	ADD 	w3, 4		; Fourth digit/letter
+	LA 	w4, WordToPrint
+	ADD 	w4, 2		; Fourth digit/letter
+; ^ YOU'LL NEED TO ADD MORE/CHANGE HERE ^
+
+	MOV	b10, 0x31	; "1"
+	MOV	b11, 0x32	; "2"
+	MOV	b12, 0x32	; "2"
+	MOV	b13, 0x35 	; "5"
+
+	MOV 	b14, 0x2F	; "/"
+
+; Normal runtime code begins.
+main:	
+	call 	PrintNow 	
+	CALL 	PrintReverse	
+	JMP 	toEnd
+
+PrintNow:
+	WRROM 	w0,b10
+	WRROM 	w1,b11
+	WRROM 	w2,b12
+	WRROM 	w3,b13
+	WRROM 	w4,b14
+	PRINT 	WordToPrint
+	RETI 			
+
+PrintReverse:
+	PUSH 	b11
+	PUSH 	b10
+	PUSH 	b14
+	PUSH 	b13
+	PUSH 	b12
+
+	POP 	b10 		
+	POP 	b11 
+	POP 	b14 
+	POP 	b12
+	POP 	b13
+; ^ YOU'LL NEED TO ADD MORE/CHANGE THINGS HERE ^
+	CALL 	PrintNow	
+	RETI
+
+; The 'String' here is just some whitespace used to insert characters in later.
+WordToPrint:
+	STRING	"      "
+;End Program
+toEnd:
+END	

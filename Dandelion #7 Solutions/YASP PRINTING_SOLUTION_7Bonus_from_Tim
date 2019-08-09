@@ -1,0 +1,177 @@
+Another solution :)  Input, display and reverse a date.
+
+
+Possible educational opportunity for how I did the inputting in binary then converted to ASCII later?
+
+
+========
+
+    LA  w0, WordToPrint
+    ADD w0, 0  ; First digit/letter
+    LA  w1, WordToPrint
+    ADD  w1, 1  ; Second digit/letter
+    LA  w2, WordToPrint
+    ADD  w2, 2  ; Third digit/letter
+    LA  w3, WordToPrint
+    ADD  w3, 3  ; Fourth digit/letter
+    mov w4, w3
+    inc w4
+
+;We'll do this later
+;MOV w5, 0x3030  ; '00'  / b10 b11
+;mov w6, w5
+
+    MOV  b14, 0x2F ; "/"  / w7
+
+; b15 = state: 0 first num, 1 2nd num, 2 output
+    dec w16  ; max delay / ffff
+    mov w17, 10
+
+    mov w8, 257  ; b16 first num, b17 2nd
+
+;    mov b16, 1  ; changed later
+    mov b17, 1
+    mov b18, 12  ; months, for first entry - changed later
+
+    print EnterFirst
+    push b17
+    call PrintNum
+
+    enable 6
+waitinput:
+    delay w16
+    cmp b15, 2
+    jnz waitinput
+
+    clr w15
+; first number
+    mov b31, b16
+    div w15, w17
+    mov b10, b31
+    mul w15, w17
+    sub b16, b31
+    mov b11, b16
+    add w5, 0x3030
+
+; second number
+    mov b31, b17
+    div w15, w17
+    mov b12, b31
+    mul w15, w17
+    sub b17, b31
+    mov b13, b17
+    add w6, 0x3030
+
+    call  PrintNow
+    CALL  PrintReverse
+    print LastString
+    JMP  toEnd
+
+PrintNow:
+    WRROM  w0,b10
+    WRROM  w1,b11
+    wrrom w2,b14
+    WRROM  w3,b12
+    WRROM  w4,b13
+
+    PRINT  WordToPrint
+    RETI    
+
+PrintReverse:
+    PUSH  b10
+    PUSH  b11
+    PUSH  b12
+    PUSH  b13
+
+    POP  b11   
+    POP  b10
+    POP  b13
+    POP  b12
+    CALL  PrintNow 
+    RETI
+
+; param byte: number to print
+; assumes input < 100, otherwise it will break
+PrintNum:
+    pop w31
+    pop b10   ; get param from stack
+    push w31
+
+    mov b11, b10
+testdigit:
+    cmp b10, 10
+    jc belowten
+    sub b10, 10
+    jmp testdigit
+belowten:
+    push b10
+    clr b10
+    div w5, w17
+    pop b10
+    la w31, NumToPrint
+    add w5, 0x3030
+    wrrom w31, b11
+    inc w31
+    wrrom w31, b10
+    print NumToPrint
+    ret
+
+
+isr1:
+    cmp b17, b18
+    jc dontwrap
+    clr b17
+dontwrap:
+    inc b17
+    push b17
+    call PrintNum
+    reti
+
+isr2:
+    cmp b15, 1
+    jnc secondNum
+    mov b16, b17
+    print EnterSecond
+    mov b17, 1
+    mov b18, 31
+    push b17
+    call PrintNum
+secondNum:
+    inc b15
+    cmp b15, 2
+    jnz isr2_ret
+    disable
+isr2_ret:
+    reti
+
+    dw 0xffff  ; end-of-code marker
+; Just barely space to fit the above before IDT
+; if adding code above, move some routines to below this
+
+;;;;;;;;;;;;;
+    org 0x102
+    da isr1
+    da isr2
+
+
+; The 'String' here is just some whitespace used to insert characters in later.
+WordToPrint:
+    STRING "      "
+NumToPrint:
+    string "  "
+EnterFirst:
+    string "Plese enter the month:"
+EnterSecond:
+    string "Please enter the day:"
+LastString:
+    string "Goodbye!"
+
+;End Program
+toEnd:
+    delay w16
+    jmp toEnd
+
+
+
+END 
+
