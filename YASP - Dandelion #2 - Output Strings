@@ -1,0 +1,86 @@
+
+; =====================================
+;        yasp - Dandelion #2
+; 
+; IF YASP RUNS SLOW SAVE ANY WORK YOU HAVE
+; TO A LOCAL TEXT FILE (copy & paste) AND
+; RE-OPEN A NEW YASP SESSION.
+;
+; Welcome to the second Intro to Assembly
+; Code examples!
+;
+; Here we'll look at displaying data in memory
+; to the DEBUG tab as readable strings.
+; =====================================
+;       RECAP/ANSWERS TO LESSON #1
+;
+; Every time a register (such as b0) was
+; used, a second register also saw a change, such
+; as w0. This is because in YASP, the first 16
+; word registers (w0-w15) are, by default, mirroring the
+; 32 byte registers (b0-b31). That is, w0 is comprised of the
+; b0 byte and the b1 byte appended together, w1 is comprised of
+; b2 and b3, and so on.
+;
+; Note that this means that the first byte and second byte of these
+; word registers refer to different values. They're not summed together
+; arithmetically! If you want to refer to the second value, you'd
+; have to explicitly code in to check the second byte (seen in future lessons).
+
+; Here we set up so that a register can 'show' a string of letters
+	LA	w8, YouCanNameThisAnything	; Adds the MEMORY ADDRESS of the 'YouCanNameThisAnything' string to register w8.
+	ADD	w8, 9				; Moves the memory address 9 'spaces/characters' forward. We'll see why later!
+; Note that this concept - putting the memory address into something instead of the data itself - is called a 'pointer'.
+; 'Pointers' are simply index locations, and so take up less space.
+
+; As an anecdote, imagine searching for a paragraph of text in a book. It's much faster to store/remember "Page 101, Line 15" in memory than
+; to store the entire paragraph's worth of text!
+
+main:			
+	MOV	b0, 0x31
+	WRROM	w8,b0		; This overwrites the w8 register with the contents of b0, specifically to "ROM" or Read-Only-Memory. 
+; Note that this actually writes to 9 spaces ahead of the 'start' of w8, because of the "Add 9" we did on row 31.
+	PRINT YouCanNameThisAnything ; Shows the contents of the String in the debug console on YASP.
+; Note that the string will be altered by the contents of w8 because of the always-active code before 'main'.
+	MOV	b4, 0x35 
+	WRROM	w8,b4		; Overwrite the relevant part of the register again
+	PRINT YouCanNameThisAnything
+	MOV	b5, 0x39
+	WRROM	w8,b5		; Overwrite the relevant part of the register again
+	PRINT YouCanNameThisAnything
+	jmp JumpToEnd       ; This simply moves to the program END. END isn't actually written here because the
+; STRING initialization below would be auto-commented out if it occured after the END line.
+
+
+YouCanNameThisAnything:		; Name your string variable whatever you like
+	STRING	"Showing: 0"	; Insert some text to use for your string.
+
+JumpToEnd:
+END
+
+; =====================================
+;	FOR THE READER (That's you!)
+;		TO DO:
+;
+; 1. Add a breakpoint to row 40 [MOV	b0, 0x31]
+; 2. Run the program using the button at the top, and use the "Step" command to run one line at a time until END.
+;   You can tell what line has just been run by the grey highlighted row. 
+; 3. In addition to the register tab, this time be sure to watch the DEBUG tab, which shows the printed commands!
+; 4. Press the red cross at the top-right corner to close after you've reached the "END" of the program.
+;
+;   ANSWER/ATTEMPT THE FOLLOWING:
+;
+; 1. Comment out row 32 [ADD	w8, 9] by playing a semicolon before the text. [BUGFIX:] AS AN ADDED PRECAUTION, click the breakpoint at row 40 twice, toggling it off and on again. 
+;        Run the program again. What has changed? Why?
+; 2. What would happen if you uncommented it, but change it to add '5' instead of add '9'? Try it if you're unsure!
+; 3. Check out the ROM tab as you run through the program again. Unlike lesson 1, it's got quite a few bytes of data in it (each 2 digits are a byte). What is this?
+; 4. Note that one part of data changes as you go through the program. Repeat step 2 with a different number and see if it changes. Can you explain why?
+; 5. If you're still unsure, or want to see more, try changing the String contents from "Showing: 0" to something else, like "Showyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy", and look at the ROM tab
+;
+;	CONSIDER THIS/HINTS:
+; 1. The w8 register (which is linked to the b16 and b17 registers, which is why they show up on the registers pane) contains the 'directions' to see where the String is stored, but not the string itself.
+; 2. Generally, it takes a lot more than 2 bytes to display a word of text! Generally, a single character (anything on the keyboard, really) takes up a single byte of information - or 8 bits.
+;   In other words, almost any single character (of which you need many to display a word or sentence) is described in a combination of 8 0s and 1s, which can also be shown in a 2-digit HEXadecimal number. 
+;   0000 0000 in binary equals 00 in Hex. 1111 1111 in binary equals FF in Hex. 
+; 3. If you can answer the questions above, then you can work out where the String is being stored in memory for this program, and should be developping an idea as to how code is interacting with binary/hex representations of memory. 
+

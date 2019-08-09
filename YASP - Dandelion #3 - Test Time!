@@ -1,0 +1,52 @@
+; =====================================
+;    yasp - Dandelion #3 - TEST TIME
+; 
+; IF YASP RUNS SLOW SAVE ANY WORK YOU HAVE
+; TO A LOCAL TEXT FILE (copy & paste) AND
+; RE-OPEN A NEW YASP SESSION.
+;
+; Future training material will NOT have the
+; above warning. It is now assumed knowledge 
+; on handling the sometimes-clunky YASP.
+;
+; Welcome to the third lesson, and for the
+; first time you'll be writing your own 
+; assembly code!
+;
+; Here you'll use the concepts you've
+; learned to write a program in YASP
+; that demonstrates your understanding
+; of handling printing and modifying text.
+; =====================================
+;       RECAP/ANSWERS TO LESSON #2
+;
+; The 'string' variable, covered at the bottom of the code in
+; lesson 2, was stored in Read-only-memory. On the ROM tab, each
+; 2-digit value was the hexadecimal representation of a given
+; character (letter) or the start/ending bytes that indicate 
+; information about the string, such as its format and length.
+;
+; Adding a number to the word register (that points to the string)
+; is the equivalent of moving 'forward' X bytes of data, so when
+; a character/number is changed in the word register it will alter
+; a part of the string X characters past the 'start'. 
+; =====================================
+; 		INSTRUCTIONS
+;
+; Write a program that prints "Assembly", "Assembling" and "Assembled"
+; to the debug console, each on a new line. 
+; You MUST use only a single STRING variable.
+;
+; For ##BONUS## points, use the 'jmp' (jump) command to loop the program
+; so that it prints these 3 lines over and over in order.
+;
+; For ##BONUSBONUSBONUS## points, use the 'cmp' (compare) command to
+; have the program loop exactly 3 times, then exit. reading test11.mas in the
+; sample YASP programs (available from their documentation on the main site)
+; might help!
+;
+; When you've written your answer (either below this text, or in a new file),
+; copy it to a text file and save it in the 'Dandelion #3 Solutions' folder
+; with the following title:
+;
+; PRINTING_SOLUTION_[Firstname]_[Lastname]

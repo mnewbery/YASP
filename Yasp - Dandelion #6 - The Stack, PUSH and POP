@@ -1,0 +1,178 @@
+; =====================================
+;        yasp - Dandelion #6
+; 
+; Welcome to the sixth Intro to Assembly
+; Code examples! This will be the FINAL
+; exercise planned, besides one final
+; code-test.
+;
+; Here we will be discussing what 'the
+; stack' is, how it works, what it's
+; used for. This is a concept that
+; is integral to almost every form of
+; assembly code and runtime memory management.
+; =====================================
+;       RECAP/ANSWERS TO LESSON #5
+;
+; The difference between JMP and CALL is that
+; JMP moves you to start running code at a given
+; label. That's all. If we need to return (such
+; as via RETI) there is nothing to go off from, and
+; so RETI will go back to line 0, which is, formally
+; speaking, the start of main (which is where code
+; begins executing in normal run-time, after initialization
+; the first time it's opened).
+;
+; CALL, however, 'saves' the current location in
+; the 'stack', as a line number (counting the first
+; line of normal/main code as line 0). When RETI
+; is called, it looks at the last number placed on
+; the stack to know where to return to to continue
+; running normally. This means you can make multiple
+; CALLs to move around, but they'll be able to retrace
+; their steps by what data is left in the Stack
+; (visible from the Registers pane).
+
+; So what is the stack? That's what we'll learn now!
+; =====================================
+
+; The stack is a FIRST-IN-LAST-OUT structure, or FILO. 
+
+; [This is opposed to a queue, another term used in programming,
+; which is FIFO (First in First Out).]
+;
+; In a stack, whatever is put into the stack, usually referred
+; to as PUSHING some data there, is kept there until it is
+; taken out by a POP. A "POP" will remove the last bit of 
+; data put into the stack, and use it for data in the program.
+
+; Note that the stack only exists during runtime of the program,
+; and thus is not 'saved' after the program exits. This is,
+; in theory, also true of registers/cache. The Stack basically
+; represents RAM, and so its contents can be seen on the RAM
+; panel of YASP.
+
+; Note that, generally, data is added/removed to/from the stack 
+; in 2-byte chunks, and the value "SP" that you see on the
+; registers pane stands for Stack Pointer. It tells you where 
+; the "Stack" currently ends. Pushing more data will move the
+; Stack Pointer 2 address points (bytes) up, and Popping data
+; will move the Stack Pointer 2 address points back. On the RAM
+; page you can see the address numbers along the left marking
+; memory locations.
+
+; Here we'll use a short program to show PUSH and POP to
+; use the stack. This is very common in assembly code programs!
+
+; In this case, only using 4 byte registers (and 4 word registers
+; to correctly link them to a string, necessary in YASP), we will 
+; enter 2 different words, one a reverse of the other, using a stack!
+
+; Here we initialize some values. We link some word registers to the string
+; and set up byte registers with the 4 letters.
+
+	LA 	w0, WordToPrint
+	ADD	w0, 0		; First digit/letter
+	LA 	w1, WordToPrint
+	ADD 	w1, 1		; Second digit/letter
+	LA 	w2, WordToPrint
+	ADD 	w2, 2		; Third digit/letter
+	LA 	w3, WordToPrint
+	ADD 	w3, 3		; Fourth digit/letter
+
+	MOV	b10, 0x54	; "T"
+	MOV	b11, 0x52	; "R"
+	MOV	b12, 0x41	; "A"
+	MOV	b13, 0x50 	; "P"
+
+; Normal runtime code begins.
+main:	
+	call 	PrintNow 	; The "PrintNow" subroutine just uses the above byte registers to spell a word in sequence, as seen below.
+	CALL 	PrintReverse	; Just utilizes the stack to change around the byte values.
+	JMP 	toEnd
+
+; Nice and simple. Basically write from byte registers into the string so it reads "[b10][b11][b12][b13]"
+PrintNow:
+	WRROM 	w0,b10
+	WRROM 	w1,b11
+	WRROM 	w2,b12
+	WRROM 	w3,b13
+	PRINT 	WordToPrint
+	RETI 			; Returns to the beginning of Main if JUMPED to, and to where it was called originally if CALLED.
+
+; We just Push the byte values, then pop them off again and print the result. Remember that a stack is First-In-Last-Out, so...
+PrintReverse:
+	PUSH 	b10
+	PUSH 	b11
+	PUSH 	b12
+	PUSH 	b13
+
+	POP 	b10 		; Takes the MOST RECENT value in the stack and moves it to register b10. This will be b13.
+	POP 	b11 		; And then the most recent (after removing the last) to register b11, and so on...
+	POP 	b12
+	POP 	b13
+	CALL 	PrintNow	; Note that we use the EXACT SAME subroutine/label to print as we did in main. The only difference is we've changed the register values by using the stack.
+	RETI
+
+; The 'String' here is just some whitespace used to insert characters in later.
+WordToPrint:
+	STRING	"     "
+;End Program
+toEnd:
+END	
+
+; =====================================
+;	FOR THE READER (That's you!)
+;		TO DO:
+;
+; 1. This is the last program for my lessons!
+;	Just run it normally and watch debug!
+; 2. Close and restart the program, setting a 
+;	breakpoint near the start of Main and
+; 	step through it, whilst looking at 
+;	the Registers pane.
+;
+;	ANSWER THE FOLLOWING:
+;	
+; 1. Add ONE (yes ONE) line of code to change
+;	the program to reverse the last string
+; 	and print it again. To be clear, the output
+; 	in DEBUG should look like:
+
+;	TRAP 
+;	PART 
+;	TRAP 
+
+; 2. After answering part 1, now add 3 more lines
+;	of code so it prints:
+
+;	TRAP
+;	TRAP
+;	PART
+;	PART
+;	PART
+;	TRAP
+
+; 3. Having completed 1 and 2, can you see the 
+; 	usefulness of subroutines/functions
+; 	for code re-use in a program?
+
+;	CONSIDER THIS/HINTS:
+;
+; 1. This program uses the stack to re-order
+;	the values held in a sequence of registers,
+; 	as well as handle some simple printing. That's
+; 	all.
+; 2. The stack is a great place to store a bunch of data,
+;	and you can even intentionally navigate it by 
+; 	changing the Stack Pointer or looking at a specific
+; 	address in RAM so that you're not only limited to
+; 	the last thing Pushed. However, generally you want to
+; 	keep the use of the stack consistent and clean, and the
+; 	nature of it as a First-in-Last-Out structure comes in
+; 	handy in many forms of programming - for example, 
+; 	remembering addresses to jump BACK to after a subroutine
+; 	has finished.
+; 3. That's the last of my assembly code example exercises!
+;   The only thing that remains is one last test-yourself
+;   coding exercise, like lesson #3 was before!

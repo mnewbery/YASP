@@ -1,0 +1,124 @@
+; =====================================
+;        yasp - Dandelion #5
+; 
+; Welcome to the fifth Intro to Assembly
+; Code examples! 
+;
+; Here we have a short introductory lesson
+; to stack logic, in regards to handling
+; code jumps.
+; =====================================
+;       RECAP/ANSWERS TO LESSON #4.5
+;
+; The answers will be covered, largely, in
+; this quick lesson!
+; =====================================
+
+; Follow the instructions at the bottom, as always!
+
+; The 'main' method where the program starts. 
+; It only exists as a first-step here, as it doesn't
+; do anything but start up the program (either Test One
+; or Test Two, depending on what you have un-commented)
+main:	
+	Print 	EnteredMain 	; Print to DEBUG that you've entered Main, to help 'see' program flow.
+	JMP 	Test_One	; Test the "JMP" operation in Test_One
+;	JMP 	Test_Two	; Test the "CALL" operation in Test_Two
+;	JMP 	Test_Three	; Test multiple "CALL" operations in Test_Three
+
+Test_One:
+	PRINT	Waiting		; Print to DEBUG a message to help see program flow.
+	delay 	30000
+	jmp 	testLabel	; Jumps to a certain other point, which just delays and returns
+	PRINT 	Check 		; Now that it's returned, we print the CHECK message... right?
+	JMP 	toEnd 		; We've got the successful message, so end.
+
+; Test_Two seems almost the same as Test_One, but with one difference...
+Test_Two:
+	PRINT	Waiting
+	delay 	30000
+	Call 	testLabel
+	PRINT 	Check
+	JMP 	toEnd
+
+testLabel:
+	Delay 	30000
+	RETI 			; Returns... where?
+
+; Test_Three is a varation of Test_Two
+Test_Three:
+	PRINT	Waiting
+	delay 	30000
+	Call 	testLabelPartOne
+	PRINT 	Check
+	JMP 	toEnd
+
+testLabelPartOne:
+	Delay 	10000
+	CALL 	testLabelPartTwo
+	PRINT 	WaitingPartOne
+	RETI 
+
+testLabelPartTwo:
+	Delay 	10000
+	PRINT 	WaitingPartTwo
+	RETI 
+
+
+;Strings
+EnteredMain:
+	STRING "ENTERED MAIN METHOD"
+
+Waiting:
+	STRING "Waiting..."
+
+WaitingPartOne:
+	STRING "First Part Done?"
+
+WaitingPartTwo:
+	STRING "Second Part Done?"
+
+Check:
+	STRING "Success!"
+
+;End Program
+toEnd:
+END	
+
+; =====================================
+;	FOR THE READER (That's you!)
+;		TO DO:
+;
+; 1. Run the program and watch the DEBUG. Then exit.
+; 2. Add a breakpoint to the first line (line 24), run
+; 	through the program again, and step through 
+;	the program line-by-line to see what happens on 
+;	the Script tab. Notice where the running code 
+;	goes (the Grey highlight).
+; 3. Comment out Test_One (line 25) and un-comment
+;	out Test_Two (line 26). Run again and watch DEBUG.
+; 4. Repeat step 2, but for Test_Two, and see the program run.
+; 5. Try to answer the questions below, then finally do the same to
+;	switch to and run Test_Three like above - both looking 
+;	at DEBUG and then again stepping through.
+;
+;	ANSWER THE FOLLOWING:
+;	
+; 1. What is the difference between Test_One and Test_Two in terms
+; 	of code?
+; 2. What is the difference in terms of how they run/resolve?
+; 3. Press the Help button (the 'i' symbol in a circle, two steps to the
+; 	right of RUN) and look up RETI, CALL and JMP. Can you work out why
+; 	there are differences?
+; 4. What do you see happen in Test_Three on the Registers pane? What is that?
+; 	Is there any relationship with something on that page and in the RAM tab?
+; 	Is there any other significance to those numbers? 
+; 5. Are the Strings posted to DEBUG in the order you expected for Test_Three?
+; 6. How does RETI function differently between these cases? See the answer
+; 	in the next lesson.
+;
+;	CONSIDER THIS/HINTS:
+; 1. Watch the program run! Which line of code executes in what order?
+; 2. Take note of the program line numbers. Assume that the first line of code in main
+;	(the first print statement) is line '0', so subtract 24 from every other line number.
+; 	Does subtracting 24 mean something important relative to question 4?

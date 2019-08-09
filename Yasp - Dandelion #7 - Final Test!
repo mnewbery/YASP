@@ -1,0 +1,117 @@
+; =====================================
+;    yasp - Dandelion #7 - TEST TIME
+;
+; The final test!
+;
+; Here you'll use the concepts you've
+; learned to alter the lesson #6 code
+; to demonstrate your awareness of
+; using the stack, as well as some
+; other things we've learned throughout
+; the lessons!
+; =====================================
+;       RECAP/ANSWERS TO LESSON #6
+;
+; To answer both questions you simply needed
+; to add more "CALL PrintNow" and "CALL PrintReverse"
+; lines of code to main. Every time PrintNow is 
+; called it will simply print the last printed
+; string (or TRAP by default), and every time PrintReverse
+; is called it will simply print the reverse of the
+; last printed string (or PART by default). 
+;
+; The use of that is a very light demonstration
+; of Function use in most coding languages -
+; re-usable blocks of code to fulfill any
+; particular need repeatedly, such as encoding,
+; encrypting, decrypting, printing, handling data,
+; completing transactions, logging, etc. Virtually
+; all programs boil down to a "series of
+; interconnected functions".
+
+; =====================================
+; 		INSTRUCTIONS
+;
+; Using the Lesson #6 code as a base (also shown below, with a slight
+; alteration to help you and to test your program), alter it so
+; that it shows any date in an mm/dd format, and then alters it
+; so that it then shows in an dd/mm format. 
+;
+; For example, it could show:
+
+; 12/25
+; 25/12 
+
+; You MUST use the stack to accomplish this. This might take some
+; thought, and I strongly recommend you use a lesson you may have
+; learned as early as lesson #1 to help you do this easily! Not
+; many lines of code have to be changed, for the most part, but
+; some logic will have to be altered.
+;
+; You can hard-code in the first mm/dd date, as it is, partially, by default
+; in the sample program below.
+
+	LA 	w0, WordToPrint
+	ADD	w0, 0		; First digit/letter
+	LA 	w1, WordToPrint
+	ADD 	w1, 1		; Second digit/letter
+	LA 	w2, WordToPrint
+	ADD 	w2, 2		; Third digit/letter
+	LA 	w3, WordToPrint
+	ADD 	w3, 3		; Fourth digit/letter
+; ^ YOU'LL NEED TO ADD MORE/CHANGE HERE ^
+
+	MOV	b10, 0x31	; "1"
+	MOV	b11, 0x32	; "2"
+	MOV	b12, 0x32	; "2"
+	MOV	b13, 0x35 	; "5"
+	
+	MOV 	b14, 0x2F	; "/"
+
+; Normal runtime code begins.
+main:	
+	call 	PrintNow 	
+	CALL 	PrintReverse	
+	JMP 	toEnd
+
+PrintNow:
+	WRROM 	w0,b10
+	WRROM 	w1,b11
+	WRROM 	w2,b12
+	WRROM 	w3,b13
+; ^ YOU'LL NEED TO ADD MORE HERE ^
+	PRINT 	WordToPrint
+	RETI 			
+
+PrintReverse:
+	PUSH 	b10
+	PUSH 	b11
+	PUSH 	b12
+	PUSH 	b13
+
+	POP 	b10 		
+	POP 	b11 		
+	POP 	b12
+	POP 	b13
+; ^ YOU'LL NEED TO ADD MORE/CHANGE THINGS HERE ^
+	CALL 	PrintNow	
+	RETI
+
+; The 'String' here is just some whitespace used to insert characters in later.
+WordToPrint:
+	STRING	"      "
+;End Program
+toEnd:
+END	
+
+; You're done! If you REALLY want to impress me, using skills from these lessons,
+; you can go through the effort of fulfilling the #BONUS# condition of allowing
+; USERS TO INPUT DATE to reverse from mm/dd to dd/mm. If you choose to do so,
+; feel free to re-use or alter code from previous lessons which have covered
+; user input with YASP buttons.
+;
+; When you've written your answer (Preferably in a new file),
+; copy it to a text file and save it in the 'Dandelion #7 Solutions' folder
+; with the following title:
+;
+; PRINTING_SOLUTION_[Firstname]_[Lastname]

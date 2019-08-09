@@ -1,0 +1,134 @@
+; =====================================
+;        yasp - Dandelion #4
+; 
+; Welcome to the fourth Intro to Assembly
+; Code examples! If you haven't already,
+; please complete and submit your solution
+; to the #3 YASP lesson.
+;
+; Here we'll move on to accepting user 'input'
+; and looping.
+; =====================================
+; 
+; Unfortunately, YASP does not allow for typical user input. At least,
+; not in the form of text. This would not be a problem for most
+; forms of assembly code, but YASP is designed as a very simple machine
+; code for basically just handling blinking lights/LEDs of various colors.
+;
+; It does have the ability to press buttons, however, and so that will be
+; our 'user input' for this lesson. 
+;
+; I recommend that you jump past the code to read the instructions on using the program, and 
+; run it a few times (with eyes on the DEBUG panel) just to see it function.
+
+
+; First, initialize our data. That basically means set up our registers, 'pointers' and
+; variables so we can later use them in reference to strings and for other means.
+
+; Setting up registers to 'point' to strings, and moving the 'cursor' via
+; the pointed memory location. This is like in lesson #2.
+	LA	w8, FirstInput	; Pointer
+	ADD	w8, 16		; Move cursor 20 spaces forward for "FirstInput"
+	LA	w9, Results	; Pointer
+	ADD 	w9, 13		; Move cursor 8 spaces forward for "Results"
+
+; Default register values
+	MOV	b0, 0x30	; b0 defaults to '0' in ASCII, used to track the user input.
+
+; Don't worry too much about this - this line simply allows us to use buttons as input for this program.
+	enable	0x06		; Enable interrupts on pins 1 and 2. Basically, this allows us to use 'buttons' as input.
+
+; Print out a relevant line of text to start the program off (see in DEBUG)
+	WRROM 	w8,b0
+	PRINT 	FirstInput
+
+; This 'main' part of code is actually just an infinite loop. It waits about a second, 
+; then runs again, waiting to be forcibly interrupted by user input.
+;
+; Normally, most programs would explicitly 'wait' for user input, but YASP doesn't have
+; any such ability, only 'interrupts' where something is changed during the program's 
+; normal running.
+main:
+	DELAY	30000	
+	jmp	main 	; Loops back to just delay again
+
+; isr1 is what runs when you press the first (left) button.
+isr1:
+	inc	b0		; Increment (count up) the number
+	CMP	b0, 0x3a 	; Check if it's above 9
+	JZ	ResetFirst	; If so, run another routine to set it to 0 again
+	WRROM	w8,b0		; Overwrite the relevant part of the register again
+	PRINT 	FirstInput	; Print the string, which due to w8 being overriden now shows the current number
+	reti			; Return to main to continue looping.
+
+; Simply resets the counter to 0 instead of incrementing it further.
+ResetFirst:
+	MOV 	b0, 0x30	; It's important to reset the number to 0 because we only have one byte (one character/digit)
+;					to use to store the user input.
+	WRROM 	w8,b0
+	PRINT 	FirstInput
+	RETI
+
+; isr2 is what runs when you press the second (right) button.
+isr2:
+	WRROM 	w9, b0 		; Put the 'entered' value, currently in b0, into another string.
+	PRINT 	Results	
+	JMP 	FinishProgram	; Jump to end-of-program
+
+; This is the 'interrupt table'. It basically links the isr1 and isr2 functions (blue text/code 'blocks') to the buttons in YASP.
+	org	0x102 ; pin 1
+	da	isr1
+	org	0x104 ; pin 2
+	da	isr2
+
+; String values for printing.
+FirstInput:
+	STRING "Input A Number:  " ; 16 cursor movements needed to fill proper spot
+
+Results:
+	STRING "You entered:  " ; 13 cursor movements needed to fill proper spot
+
+
+; Simply ends the program (hypothetically. In YASP it just tries to keep running, really.)
+FinishProgram:
+end
+
+; =====================================
+;	FOR THE READER (That's you!)
+;		TO DO:
+;
+; 1. Run the program using the button at the top.
+; 2. Have the DEBUG pane showing, and on the circuitboard image
+; 	beneath that panel press the GREY button to the lower-middle
+;	(hovering over the button shows a "Pin 1" tooltip.
+; 3. Press the button as many times as you want, and when you're done,
+; 	press the RED button to the immediate right.
+; 4. Close the program.
+;
+;	ANSWER THE FOLLOWING:
+;	
+; 1. In the FirstInput string "Input a Number:  ", DELETE/backspace a whitespace
+; 	at the end of the string but within the quotes. Alternatively, replace it with
+; 	"Input a Number: ". Run the program and wait for a second.
+; 2. Notice a problem? Why could this be? Look at the ROM page and consider how strings
+; 	are formed, and what is different here.
+; 3. Fix the program (put the extra space in the string again).
+; 4. Most assembly languages can only handle one or two bytes of data at a time, using
+;   tiny data storage devices like Registers. With that in mind, how could you enter 
+;   or store 2, 3 or more bytes of data? Could the same method of storing strings be used?
+;
+;	CONSIDER THIS/HINTS:
+;
+; 1. 'Strings' that are stored in Read-Only-Memory (in Yasp) contain the following information.
+;   Something (some pattern or byte or sequence of bytes) that indicate the start of the string,
+;   the content (the individual characters/bytes) and something indicating the end of the string,
+;   usually a lack of data or the presence of a new 'string start' identifier. This is similar
+;   to HTML tags, like [b] and [/b], or [div] and [/div]. There's an opening and closing. What happens
+;   if you overwrite one of these in memory?
+; 2. Could this be linked into possible security exploits?
+; 3. Note that in our program we are exclusively handling numbers as ASCII values - not all assembly 
+;   languages would do this. In fact, most would prefer to only switch them to ASCII values if we
+;   intend to print them so a user can see - ASCII is simply a method of encoding, of treating bytes
+;   of binary as an icon that humans can read.
+; 4. In computer languages, generally one byte can carry numbers far greater than a single digit! 8
+;   binary digits can certainly count a lot higher than 9!

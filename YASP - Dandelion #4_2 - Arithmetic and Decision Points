@@ -1,0 +1,220 @@
+; =====================================
+;        yasp - Dandelion #4.5
+; 
+; Welcome to the second part of the 
+; fourth Intro to Assembly Code examples! 
+;
+; Here we'll move on to more complicated
+; code structures, and basic, if clumsy, arithmetic.
+;
+; Do note this is based on the Lesson #4 code directly.
+; =====================================
+;       RECAP/ANSWERS TO LESSON #4
+;
+; Without the trailing whitespace, the entered text
+; at the end of the FirstInput string effectively overwrote 
+; the identifier for the end of the string in memory,
+; causing YASP to think that both it and the Results strings were
+; actually one long one. This would be the equivalent of
+; overwriting a closing tag in HTML.
+;
+; EDIT: Note that, formally speaking, there's no such
+; thing as a 'start' or 'end' of string identifier.
+; Simply an address starting point is labelled so that
+; the bytes of the string can be read for printing,
+; and they will continue to read characters until
+; it comes across a 0000 0000 byte (or 00 in Hex),
+; which indicates 'null' (not to be confused with 20 
+; in Hex, which is a "Space" or blankspace, and will
+; not end a string). The 'tag', if you want to call it
+; that, being overwritten was simply a null, or 00,
+; value. Adding an extra space, or an extra 20, meant
+; that the null was not overwritten and the string
+; did not 'run over'.
+;
+; This is, conceptually, not far from the idea as to
+; how some exploits can occur, particularly injection-
+; -style attacks. By exploiting user input that may not
+; be properly covered, you might be able to overwrite
+; memory locations that can cause unintended, possibly
+; exploitable, output. What if the second string contained
+; some sensitive data that was only supposed to be accessed
+; in a different way?
+;
+; Alternatively, it's worth noting that a lot of things in memory
+; have meaning, and may 'run' or be treated as code! Overflowing
+; memory limits or string limits may allow malicious users to
+; drop text in such a way that it's treated as code at some point, 
+; such as from an assembly code/machine code compiler, or as a 
+; script. What if a program handled data in registers, and you could
+; force new content into those registers?
+; =====================================
+
+; Continuing on, an alteration of our lesson #4 code, but this time 
+; users are inputting two values, one after the other, and the results
+; are summed together!
+
+
+; First, initialize our data. That basically means set up our registers, 'pointers' and
+; variables so we can later use them in reference to strings and for other means.
+
+; Setting up registers to 'point' to strings, and moving the 'cursor' via
+; the pointed memory location. This is like in lesson #2.
+	LA	w8, FirstInput	; Pointer
+	ADD	w8, 20		; Move cursor 20 spaces forward for "FirstInput"
+	LA	w9, SecondInput	; Pointer
+	LA	w10, Results	; Pointer
+	ADD 	w10, 8		; Move cursor 8 spaces forward for "Results"
+
+; Adding default values (specifically, '0's and '1's in ASCII - Hex values) to some registers
+	MOV	b0, 0x30	; b0 is used to track the 'first' user input.
+	MOV	b1, 0x30	; b1 is used to track the 'second' user input
+	MOV 	b2, 0x30	; b2 is used as a 'flag', so the program can check whether it already has accepted the first input or not.
+	MOV 	b3, 0x31	; b3 is used simply to store the number '1', as it's used later and must be from a register.
+
+; Don't worry too much about this - this line simply allows us to use buttons as input for this program.
+	enable	0x06		; Enable interrupts on pins 1 and 2. Basically, this allows us to use 'buttons' as input.
+
+; Print out a relevant line of text to start the program off (see in DEBUG)
+	WRROM 	w8,b0
+	PRINT 	FirstInput
+
+; This 'main' part of code is actually just an infinite loop. It waits about a second, 
+; then runs again, waiting to be forcibly interrupted by user input.
+;
+; Normally, most programs would explicitly 'wait' for user input, but YASP doesn't have
+; any such ability, only 'interrupts' where something is changed during the program's 
+; normal running.
+main:
+	DELAY	30000	
+	jmp	main 	; Loops back to just delay again
+
+; isr1 is what runs when you press the first (left) button.
+; The use of CMP and 'flag' values are integral to making the 'decision points' so that one subroutine/button can do multiple different things!
+isr1:
+	CMP 	b2, 0x30 	; Check to see whether this is the first value to input (using the b2 'flag'). This is similar to an "IF" statement in most coding languages.
+	JZ	IncrementFirst
+	CMP 	b2, 0x31	; Check to see whether this is the second value
+	JZ	IncrementSecond
+	RETI			; Return to normal looping (until a button is pressed again)
+
+; If there's no input yet, the left button (pin 1) will increment the number to enter. 
+IncrementFirst:
+	inc	b0		; Increment (count up) the number
+	CMP	b0, 0x3a 	; Check if it's above 9
+	JZ	ResetFirst	; If so, run another routine to set it to 0 again
+	WRROM	w8,b0		; Overwrite the relevant part of the register again
+	PRINT 	FirstInput	; Print the string, which due to w8 being overriden now shows the current number
+	reti			; Return to isr1, which will then return back to looping immediately.
+
+; Simply resets the counter to 0 instead of incrementing it further.
+ResetFirst:
+	MOV 	b0, 0x30	
+	WRROM 	w8,b0
+	PRINT 	FirstInput
+	RETI
+
+; The same as IncrementFirst, but using different registers so we can keep track of both entered numbers
+IncrementSecond:
+	inc	b1
+	CMP	b1, 0x3a 
+	JZ	ResetSecond
+	WRROM	w9,b1		; Overwrite the relevant part of the register again
+	PRINT 	SecondInput
+	reti
+
+; Same as ResetFirst
+ResetSecond:
+	MOV 	b1, 0x30
+	WRROM 	w9,b1
+	PRINT 	SecondInput
+	RETI
+
+; isr2 is what runs when you press the second (right) button.
+isr2:
+	CMP 	b2, 0x30 	; Check to see whether this is the first value to input (using the b2 'flag')
+	JZ	SaveFirst	; If it was the first input, 'save' it in the string and change the b2 flag.
+	CMP 	b2, 0x31 	; Check to see whether this is the second value
+	JZ	SumInput
+	reti
+
+; Change the b2 flag and handle the string change, so we can start adding the second input.
+SaveFirst:
+	MOV 	b2, 0x31	; Change the b2 flag so new buttons refer to the second input.
+	WRROM 	w9, b0 		; Print the first input in the string, which is 'remembered' in ROM
+	ADD 	w9, 8
+	WRROM 	w9, b1
+	PRINT 	SecondInput
+	RETI
+
+; Oh boy. What a mess.
+; This is ugly, but basically the register values - so it can be seen properly in Debug/Strings - are all ASCII values, rather
+; than 'numbers'. ASCII don't really 'add together' easily, so we need to do some finicky handling.
+SumInput:
+	ADD 	b0, b1 		; First, add b1 to b0, so we have our two ASCII values summed.
+	sub 	b0, 0x30	; Now, if we have ASCII 0x32+0x34 (which is "2" + "4"), we'd end up with 0x66, so we need to subtract 0x30 to make it 0x36 ("6")
+	cmp 	b0, 0x3a	; If 'b0' is less than 10, we don't have a problem, and we can show what we have as the answer (move to ShowResult).
+	JC 	ShowResult
+	SUB 	b0, 0x0a	; This code only executes if b0 is greater than 10. There is no ASCII for "10", since they represent keyboard inputs, so it'd be a "1" and "0"
+; 					But here  a 6 + 4 will give us 0x3a (after our last step), which is actually colon (':'). So here we minus another 10 (remember 'a' is 10 because Hex)
+	WRROM 	w10, b3		; And then we use b3 (hard-coded as "1" in initialization) as the first digit. Basically we write "1" to represent answers from 10-19.
+	ADD 	w10, 1		; Move the pointer address one forward, so the remaining digit ("13" would be "3", "10" would be "0", and so on) is put in properly
+	JMP 	ShowResult
+
+; With the answer at hand, print the final sum result!
+ShowResult:
+	WRROM 	w10, b0
+	PRINT 	Results
+	JMP 	FinishProgram
+
+; This is the 'interrupt table'. It basically links the isr1 and isr2 functions (blue text/code 'blocks') to the buttons in YASP.
+	org	0x102 ; pin 1
+	da	isr1
+	org	0x104 ; pin 2
+	da	isr2
+
+; String values for printing.
+FirstInput:
+	STRING "Input First Number:  " ; 20 cursor movements needed to fill proper spot
+
+SecondInput:
+	STRING "  plus:   " ; 0/8 cursor movements needed to fill proper spot
+
+Results:
+	STRING "Equals:   " ; 8/9 cursor movements needed to fill proper spot
+
+
+; Simply ends the program (hypothetically. In YASP it just tries to keep running, really.)
+FinishProgram:
+end
+
+; =====================================
+;	FOR THE READER (That's you!)
+;		TO DO:
+;
+; 1. Run the program using the button at the top.
+; 2. Have the DEBUG pane showing, and on the circuitboard image
+; 	beneath that panel press the GREY button to the lower-middle
+;	(hovering over the button shows a "Pin 1" tooltip.
+; 3. Press the button as many times as you want, and when you're done,
+; 	press the RED button to the immediate right. Press the GREY
+;	button again to count up a new number, and RED once more
+;	to have the result shown.
+; 4. Close the program.
+;
+;	ANSWER THE FOLLOWING:
+;	
+; 1. Note the extensive use of different functions (in assembly code,
+;	often referred to as Routines or Subroutines), the blue-text
+;	labels covering blocks of code. JMP (Jump) commands use these
+;	labels as lines/indexes of where to jump to next in code, but what
+;	about RETI (Return)? How does it know where to go back to? Was
+;	the address/line it was previously at stored in memory? Which memory?
+;	Register, ROM, RAM or somewhere else?
+; 2. Wherever it is, what happens after the RETI command? Is it kept in memory?
+; 3. Nothing else! 
+;
+;
+;	CONSIDER THIS/HINTS:
+; 1. The last lesson to write will involve the concept of the "Stack", which is tied
+;	closely into the answer to the questions above.
